@@ -1,0 +1,1016 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>決まり字百人一首 読み上げページ | Karuta Club</title>
+  <meta name="description" content="決まり字百人一首の札に印刷された四葉マークの葉っぱの数に合わせて、決まり字かるた１〜４を選んで読み上げ確認するページです。">
+  <script>
+    window.tailwind = {
+      config: {
+        theme: {
+          extend: {
+            colors: {
+              ink: "#24201c",
+              muted: "#645e54",
+              green: {
+                DEFAULT: "#3f7539",
+                dark: "#27552c",
+                soft: "#eaf6df"
+              },
+              yellow: {
+                DEFAULT: "#ffe36d",
+                soft: "#fff5bd"
+              },
+              pink: {
+                DEFAULT: "#d84f78",
+                soft: "#ffe6ef"
+              },
+              blue: {
+                DEFAULT: "#3197c8",
+                soft: "#dff3fb"
+              },
+              orange: "#f59a25",
+              red: "#aa2f35"
+            },
+            boxShadow: {
+              panel: "0 18px 46px rgba(78, 54, 22, 0.14)"
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html {
+      min-height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+      color: #24201c;
+    }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background: #fffaf0;
+    }
+    img { display: block; max-width: 100%; }
+    button { font: inherit; }
+    [hidden] { display: none !important; }
+    .page-road {
+      position: absolute;
+      left: -8%;
+      right: -8%;
+      top: 92px;
+      height: 88px;
+      border-radius: 999px;
+      background: rgba(255, 212, 102, 0.78);
+      transform: rotate(-7deg);
+      z-index: 0;
+    }
+    .set-picker summary::-webkit-details-marker { display: none; }
+    .set-picker summary::after {
+      content: "";
+      width: 12px;
+      height: 12px;
+      display: inline-block;
+      margin-right: 9px;
+      border-right: 3px solid #27552c;
+      border-bottom: 3px solid #27552c;
+      transform: rotate(45deg);
+      transition: transform 0.18s ease;
+    }
+    .set-picker[open] summary::after { transform: rotate(225deg); }
+    .set-card[aria-pressed="true"] {
+      border-color: #d84f78;
+      background: #fff7c8;
+    }
+    .set-card[aria-pressed="true"] .set-number {
+      border-color: #d84f78;
+      background: #ffe6ef;
+      color: #d84f78;
+    }
+    .clover {
+      width: 54px;
+      height: 44px;
+      position: relative;
+      margin: 0;
+    }
+    .clover::after {
+      content: "";
+      position: absolute;
+      left: 23px;
+      top: 19px;
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #e9a7b1;
+      z-index: 2;
+    }
+    .leaf {
+      position: absolute;
+      width: 19px;
+      height: 19px;
+      border: 2px solid #e9a7b1;
+      background: #fdebef;
+      transform-origin: 50% 50%;
+      z-index: 1;
+    }
+    .leaf.active {
+      border-color: #df7d8e;
+      background: #efa0ae;
+    }
+    .leaf:nth-child(1) { left: 8px; top: 2px; border-radius: 78% 74% 6% 74%; }
+    .leaf:nth-child(2) { left: 27px; top: 2px; border-radius: 74% 78% 74% 6%; }
+    .leaf:nth-child(3) { left: 27px; top: 21px; border-radius: 6% 74% 78% 74%; }
+    .leaf:nth-child(4) { left: 8px; top: 21px; border-radius: 74% 6% 74% 78%; }
+    .poem-line {
+      --fill: 0%;
+      color: #24201c;
+      background: none;
+    }
+    .poem-line.reading {
+      color: transparent;
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    .poem-kami.reading {
+      background-image: linear-gradient(90deg, #3197c8 0 var(--fill), #24201c var(--fill) 100%);
+    }
+    .poem-shimo.reading {
+      background-image: linear-gradient(90deg, #d84f78 0 var(--fill), #24201c var(--fill) 100%);
+    }
+    body > main {
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+      padding: 16px;
+      background:
+        radial-gradient(circle at 88% 7%, rgba(255, 227, 109, 0.62) 0 150px, transparent 151px),
+        radial-gradient(circle at 6% 94%, rgba(234, 246, 223, 0.9) 0 175px, transparent 176px),
+        linear-gradient(180deg, #fffdf8 0%, #fff8e8 100%);
+    }
+    body > main > div:not(.page-road) {
+      position: relative;
+      z-index: 10;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+    header {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    header img {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: white;
+      box-shadow: 0 3px 0 rgba(63, 117, 57, 0.18);
+    }
+    header a[href*="youtube"] {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: white;
+      box-shadow: 0 3px 0 rgba(63, 117, 57, 0.12);
+      outline: 2px solid rgba(63, 117, 57, 0.2);
+    }
+    header svg {
+      width: 116px;
+      height: 28px;
+    }
+    #sets {
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 16px;
+      box-shadow: 0 18px 46px rgba(78, 54, 22, 0.18), 0 2px 12px rgba(63, 117, 57, 0.12);
+    }
+    #sets > div:first-child {
+      position: relative;
+      min-height: 116px;
+      padding-right: 112px;
+    }
+    #sets h1 {
+      margin: 0 0 8px;
+      color: #27552c;
+      font-size: clamp(1.75rem, 4vw, 3rem);
+      line-height: 1.08;
+      letter-spacing: 0;
+      font-weight: 1000;
+      -webkit-text-stroke: 0.35px currentColor;
+      text-shadow: 0 3px 0 rgba(63, 117, 57, 0.1);
+    }
+    #sets h1 span { color: #d84f78; }
+    #sets p {
+      margin-top: 0;
+      max-width: 590px;
+    }
+    #sets img[src$="kino_green.png"] {
+      position: absolute;
+      right: 0;
+      top: 10px;
+      bottom: auto;
+      width: clamp(96px, 14vw, 126px);
+      filter: drop-shadow(0 10px 16px rgba(66, 47, 24, 0.14));
+      pointer-events: none;
+    }
+    section[aria-labelledby="step-set-title"],
+    section[aria-labelledby="step-play-title"] {
+      margin-top: 16px;
+    }
+    section[aria-labelledby="step-set-title"] > div:first-child,
+    section[aria-labelledby="step-play-title"] > div:first-child {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    #step-set-title,
+    #step-play-title {
+      margin: 0;
+      color: #27552c;
+      font-size: 1.25rem;
+      line-height: 1.35;
+      font-weight: 950;
+    }
+    section[aria-labelledby="step-set-title"] > p {
+      display: inline-flex;
+      margin: 0 0 8px;
+      padding: 8px 12px;
+      border: 2px dashed rgba(63, 117, 57, 0.3);
+      border-radius: 8px;
+      background: #fff5bd;
+      color: #27552c;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      font-weight: 900;
+    }
+    .card-reference {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 0 0 10px;
+    }
+    .card-reference figure {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+      margin: 0;
+      padding: 10px;
+      border-radius: 8px;
+      background: #fffdf7;
+      box-shadow: 0 5px 14px rgba(78, 54, 22, 0.11);
+    }
+    .card-reference img {
+      width: 92px;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+    .reference-image {
+      position: relative;
+      width: 92px;
+      aspect-ratio: 1;
+    }
+    .reference-image img {
+      width: 100%;
+      height: 100%;
+    }
+    .clover-marker {
+      position: absolute;
+      right: 20px;
+      bottom: 13px;
+      width: 18px;
+      height: 18px;
+      border: 3px solid #d9232f;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+    .card-reference figcaption {
+      color: #27552c;
+      font-size: 0.86rem;
+      line-height: 1.5;
+      font-weight: 900;
+    }
+    .card-reference figcaption span {
+      display: block;
+      margin-top: 4px;
+      color: #645e54;
+    }
+    .kimari-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding: 6px 10px;
+      border: 2px solid rgba(216, 79, 120, 0.28);
+      border-radius: 8px;
+      background: #fff7c8;
+      color: #aa2f35;
+      font-weight: 950;
+    }
+    .kimari-tag span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 2px 9px;
+      border-radius: 6px;
+      background: #d84f78;
+      color: white;
+      font-size: 0.78rem;
+      line-height: 1;
+    }
+    .kimari-tag strong {
+      color: #aa2f35;
+      font-size: 1.08rem;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    .set-picker {
+      border: 2px solid rgba(63, 117, 57, 0.25);
+      border-radius: 8px;
+      background: #fffdf7;
+      box-shadow: 0 4px 0 rgba(63, 117, 57, 0.08);
+    }
+    .set-picker summary {
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 16px;
+      color: #24201c;
+      cursor: pointer;
+      font-weight: 950;
+      list-style: none;
+    }
+    .set-card {
+      min-height: 48px;
+      display: grid;
+      grid-template-columns: 36px 62px minmax(0, 1fr);
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 2px solid rgba(63, 117, 57, 0.2);
+      border-radius: 8px;
+      background: white;
+      color: #24201c;
+      text-align: left;
+      cursor: pointer;
+    }
+    .set-number {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border: 3px solid #3f7539;
+      border-radius: 999px;
+      background: #eaf6df;
+      color: #3f7539;
+      font-size: 1rem;
+      font-weight: 950;
+      line-height: 1;
+    }
+    .recommend-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #d84f78;
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 950;
+      line-height: 1.2;
+      box-shadow: 0 2px 0 rgba(170, 47, 53, 0.18);
+    }
+    .player-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border-radius: 8px;
+      background: #27552c;
+      color: white;
+    }
+    .player-card h3 {
+      margin: 0 0 4px;
+      color: white;
+      font-size: 1.2rem;
+      line-height: 1.3;
+      font-weight: 950;
+    }
+    .player-card p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 0.9rem;
+      line-height: 1.55;
+      font-weight: 800;
+    }
+    .player-card > div:last-child {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .transport {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #27552c;
+      font-size: 1.1rem;
+      line-height: 1;
+      font-weight: 950;
+      box-shadow: 0 3px 0 rgba(0, 0, 0, 0.16);
+      cursor: pointer;
+    }
+    .transport-main {
+      width: 56px;
+      height: 56px;
+      background: #ffe36d;
+      color: #24201c;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 0 rgba(136, 95, 14, 0.36);
+    }
+    .transport:disabled {
+      cursor: not-allowed;
+      opacity: 0.42;
+      box-shadow: none;
+    }
+    [data-poem-display] {
+      margin-top: 12px;
+      padding: 16px;
+      border: 2px solid rgba(63, 117, 57, 0.22);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.85);
+    }
+    .poem-line {
+      font-size: clamp(1.08rem, 3.4vw, 1.25rem);
+      line-height: 1.7;
+      letter-spacing: 0;
+      font-weight: 950;
+    }
+    @media (max-width: 640px) {
+      body > main { padding: 14px 12px; }
+      #sets { padding: 14px; }
+      #sets > div:first-child {
+        min-height: 112px;
+        padding-right: 108px;
+      }
+      .player-card { grid-template-columns: 1fr; }
+      .player-card > div:last-child { justify-content: center; }
+      .card-reference { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#fffaf0] text-ink">
+  <main class="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_88%_7%,rgba(255,227,109,0.62)_0_150px,transparent_151px),radial-gradient(circle_at_6%_94%,rgba(234,246,223,0.9)_0_175px,transparent_176px),linear-gradient(180deg,#fffdf8_0%,#fff8e8_100%)] px-4 py-4 sm:px-6 sm:py-5">
+    <div class="page-road" aria-hidden="true"></div>
+    <div class="relative z-10 mx-auto max-w-[920px]">
+      <header class="mb-3 flex min-h-12 items-center justify-between gap-3">
+        <a href="./index.html" class="inline-flex items-center" aria-label="Karuta Club 読み上げページの先頭へ">
+          <img src="assets/karuta-club-logo.png" class="h-12 w-12 rounded-lg bg-white object-cover shadow-[0_3px_0_rgba(63,117,57,0.18)]" alt="Karuta Club ロゴ">
+        </a>
+        <a href="https://www.youtube.com/c/KarutaClub" data-youtube-link class="inline-flex items-center rounded-full bg-white px-3 py-2 shadow-[0_3px_0_rgba(63,117,57,0.12)] ring-2 ring-green/20 transition hover:-translate-y-0.5 hover:ring-green focus:outline-none focus:ring-4 focus:ring-yellow" aria-label="Karuta Club YouTubeチャンネルを開く">
+          <svg class="h-7 w-[116px]" viewBox="0 0 140 34" role="img" aria-label="YouTube">
+            <rect x="1" y="5" width="42" height="24" rx="7" fill="#ff0033"></rect>
+            <path d="M18 11.5v11l10-5.5-10-5.5z" fill="#fff"></path>
+            <text x="50" y="23" fill="#111" font-size="18" font-family="Arial, Helvetica, sans-serif" font-weight="800">YouTube</text>
+          </svg>
+        </a>
+      </header>
+
+      <section id="sets" aria-labelledby="sets-title" class="rounded-lg bg-white/95 p-4 shadow-panel sm:p-5">
+        <div class="relative min-h-[116px] pr-[112px] sm:min-h-[126px] sm:pr-[156px]">
+          <h1 id="sets-title" class="mb-2 text-[1.75rem] font-black leading-[1.08] text-green-dark sm:text-5xl">
+            百人一首<br><span class="text-pink">読み上げページ</span>
+          </h1>
+          <img class="pointer-events-none absolute bottom-[-8px] right-0 w-[104px] drop-shadow-[0_10px_16px_rgba(66,47,24,0.14)] sm:w-[136px]" src="assets/kino_green.png" alt="手を振って案内するKaruta Clubの女の子キャラクター">
+        </div>
+
+        <div class="mt-4 grid gap-4">
+          <section aria-labelledby="step-set-title">
+            <div class="mb-2 flex items-center gap-2">
+              <h2 id="step-set-title" class="text-xl font-black text-green-dark">①セットを選ぼう</h2>
+            </div>
+
+            <div class="card-reference">
+              <figure>
+                <span class="reference-image">
+                  <img src="assets/card-clover-reference.png" alt="右下に四葉マークが印刷された取り札の参考写真">
+                  <span class="clover-marker" aria-hidden="true"></span>
+                </span>
+                <figcaption>札の右下にある小さな四葉マークを見ます。</figcaption>
+              </figure>
+              <figure>
+                <img src="assets/card-groups-reference.png" alt="四葉マークで分かれた4グループの札の参考写真">
+                <figcaption>塗られている葉っぱの枚数が、そのままセット番号です。<span>全部で４セット、各セット25枚ずつあります。好きなセットを選んでください。</span></figcaption>
+              </figure>
+            </div>
+            <p class="mb-2 inline-flex rounded-lg border-2 border-dashed border-green/30 bg-yellow-soft px-3 py-2 text-sm font-black leading-6 text-green-dark">
+              例: 葉っぱが１枚なら「決まり字かるた１」、２枚なら「決まり字かるた２」
+            </p>
+
+            <details class="set-picker rounded-lg border-2 border-green/25 bg-[#fffdf7] shadow-[0_4px_0_rgba(63,117,57,0.08)]" data-set-picker>
+              <summary class="flex min-h-[54px] cursor-pointer list-none items-center justify-between gap-3 px-4 py-2 font-black text-ink">
+                <span class="flex min-w-0 flex-wrap items-center gap-2">セット: <span class="text-pink" data-selected-name>決まり字かるた１</span></span>
+                <span class="ml-auto text-sm text-green-dark">変更</span>
+              </summary>
+              <div class="grid gap-2 px-3 pb-3" role="group" aria-label="四葉マークの葉っぱの数でセットを選択">
+                <button class="set-card grid min-h-12 grid-cols-[36px_62px_minmax(0,1fr)] items-center gap-2 rounded-lg border-2 border-green/20 bg-white px-3 py-2 text-left text-ink transition hover:border-green focus:outline-none focus:ring-4 focus:ring-yellow" type="button" data-set="1" aria-pressed="true">
+                  <span class="set-number grid h-[30px] w-[30px] place-items-center rounded-full border-[3px] border-green bg-green-soft text-base font-black leading-none text-green">1</span>
+                  <span class="clover" aria-hidden="true"><span class="leaf active"></span><span class="leaf"></span><span class="leaf"></span><span class="leaf"></span></span>
+                  <span class="grid gap-1">
+                    <span class="flex flex-wrap items-center gap-2"><b class="text-base font-black leading-6 text-green-dark">決まり字かるた１</b><span class="recommend-tag">おすすめ</span></span>
+                    <small class="text-sm font-extrabold leading-5 text-muted">葉っぱが１枚の札</small>
+                  </span>
+                </button>
+
+                <button class="set-card grid min-h-12 grid-cols-[36px_62px_minmax(0,1fr)] items-center gap-2 rounded-lg border-2 border-green/20 bg-white px-3 py-2 text-left text-ink transition hover:border-green focus:outline-none focus:ring-4 focus:ring-yellow" type="button" data-set="2" aria-pressed="false">
+                  <span class="set-number grid h-[30px] w-[30px] place-items-center rounded-full border-[3px] border-green bg-green-soft text-base font-black leading-none text-green">2</span>
+                  <span class="clover" aria-hidden="true"><span class="leaf active"></span><span class="leaf active"></span><span class="leaf"></span><span class="leaf"></span></span>
+                  <span class="grid"><b class="text-base font-black leading-6 text-green-dark">決まり字かるた２</b><small class="text-sm font-extrabold leading-5 text-muted">葉っぱが２枚の札</small></span>
+                </button>
+
+                <button class="set-card grid min-h-12 grid-cols-[36px_62px_minmax(0,1fr)] items-center gap-2 rounded-lg border-2 border-green/20 bg-white px-3 py-2 text-left text-ink transition hover:border-green focus:outline-none focus:ring-4 focus:ring-yellow" type="button" data-set="3" aria-pressed="false">
+                  <span class="set-number grid h-[30px] w-[30px] place-items-center rounded-full border-[3px] border-green bg-green-soft text-base font-black leading-none text-green">3</span>
+                  <span class="clover" aria-hidden="true"><span class="leaf active"></span><span class="leaf active"></span><span class="leaf active"></span><span class="leaf"></span></span>
+                  <span class="grid"><b class="text-base font-black leading-6 text-green-dark">決まり字かるた３</b><small class="text-sm font-extrabold leading-5 text-muted">葉っぱが３枚の札</small></span>
+                </button>
+
+                <button class="set-card grid min-h-12 grid-cols-[36px_62px_minmax(0,1fr)] items-center gap-2 rounded-lg border-2 border-green/20 bg-white px-3 py-2 text-left text-ink transition hover:border-green focus:outline-none focus:ring-4 focus:ring-yellow" type="button" data-set="4" aria-pressed="false">
+                  <span class="set-number grid h-[30px] w-[30px] place-items-center rounded-full border-[3px] border-green bg-green-soft text-base font-black leading-none text-green">4</span>
+                  <span class="clover" aria-hidden="true"><span class="leaf active"></span><span class="leaf active"></span><span class="leaf active"></span><span class="leaf active"></span></span>
+                  <span class="grid"><b class="text-base font-black leading-6 text-green-dark">決まり字かるた４</b><small class="text-sm font-extrabold leading-5 text-muted">葉っぱが４枚の札</small></span>
+                </button>
+              </div>
+            </details>
+          </section>
+
+          <section aria-labelledby="step-play-title">
+            <div class="mb-2 flex items-center gap-2">
+              <h2 id="step-play-title" class="text-xl font-black text-green-dark">②読みを流そう</h2>
+            </div>
+
+            <div class="player-card grid grid-cols-1 items-center gap-3 rounded-lg bg-green-dark p-3 text-white sm:grid-cols-[minmax(0,1fr)_auto]">
+              <div class="min-w-0">
+                <h3 class="mb-1 text-lg font-black leading-6 text-white sm:text-xl" data-player-title>決まり字かるた１を再生</h3>
+                <p class="mb-0 text-sm font-extrabold leading-6 text-white/82" data-player-copy>葉っぱが１枚の札を使うときのセット確認を読み上げます。</p>
+              </div>
+              <div class="flex items-center justify-center gap-2">
+                <button class="transport grid h-10 w-10 place-items-center rounded-full bg-white/90 text-lg font-black leading-none text-green-dark shadow-[0_3px_0_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none" type="button" data-prev disabled aria-label="前の歌" title="前の歌">
+                  <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5v14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M19 6 10 12l9 6V6Z" fill="currentColor"/></svg>
+                </button>
+                <button class="transport transport-main grid h-14 w-14 place-items-center rounded-full bg-yellow text-2xl font-black leading-none text-ink shadow-[0_4px_0_rgba(136,95,14,0.36)] transition hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-yellow-soft" type="button" data-play aria-label="再生" title="再生">
+                  <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5-10-6.5Z" fill="currentColor"/></svg>
+                </button>
+                <button class="transport grid h-10 w-10 place-items-center rounded-full bg-white/90 text-lg font-black leading-none text-green-dark shadow-[0_3px_0_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none" type="button" data-next disabled aria-label="次の歌" title="次の歌">
+                  <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5v14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M5 6l9 6-9 6V6Z" fill="currentColor"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="mt-3 rounded-lg border-2 border-green/20 bg-white/85 p-4" data-poem-display hidden>
+              <div class="mb-2 flex flex-wrap items-center gap-2">
+                <span class="rounded-full bg-pink px-3 py-1 text-xs font-black text-white" data-poem-num>1番</span>
+                <span class="rounded-full border-2 border-green bg-white px-3 py-1 text-xs font-black text-green-dark" data-poem-author>天智天皇</span>
+              </div>
+              <div class="kimari-tag"><span>決まり字</span><strong data-poem-kimari>あきの</strong></div>
+              <div class="poem-line poem-kami my-1 px-1 text-[1.08rem] font-black leading-8 sm:text-xl" data-poem-kami>あきのたの かりほのいおの とまをあらみ</div>
+              <div class="mb-2 px-1 text-xs font-bold leading-5 text-muted sm:text-sm" data-poem-kami-kanji>秋の田の かりほの庵の 苫をあらみ</div>
+              <div class="poem-line poem-shimo my-1 px-1 text-[1.08rem] font-black leading-8 sm:text-xl" data-poem-shimo>わがころもでは つゆにぬれつつ</div>
+              <div class="mb-2 px-1 text-xs font-bold leading-5 text-muted sm:text-sm" data-poem-shimo-kanji>わが衣手は 露にぬれつつ</div>
+              <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-green/15"><div class="h-full w-0 rounded-full bg-green transition-[width] duration-300" data-progress-bar></div></div>
+              <div class="mt-1 text-right text-xs font-extrabold text-muted" data-progress-label>1 / 25 首</div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="poems.js"></script>
+  <script>
+    const setDetails = {
+      1: {
+        name: "決まり字かるた１",
+        leaves: 1,
+        leafText: "１",
+        poems: [18, 57, 77, 65, 74, 23, 13, 40, 37, 66, 100, 46, 71, 33, 35, 99, 17, 42, 75, 89, 16, 34, 73, 55, 4]
+      },
+      2: {
+        name: "決まり字かるた２",
+        leaves: 2,
+        leafText: "２",
+        poems: [70, 87, 62, 85, 93, 83, 90, 14, 94, 49, 27, 5, 26, 82, 72, 60, 95, 44, 20, 38, 54, 8, 92, 11, 76]
+      },
+      3: {
+        name: "決まり字かるた３",
+        leaves: 3,
+        leafText: "３",
+        poems: [91, 15, 50, 2, 67, 9, 96, 47, 59, 32, 28, 41, 97, 24, 10, 29, 68, 36, 80, 84, 53, 86, 25, 88, 19]
+      },
+      4: {
+        name: "決まり字かるた４",
+        leaves: 4,
+        leafText: "４",
+        poems: [22, 81, 61, 21, 63, 6, 51, 98, 48, 43, 3, 52, 39, 31, 64, 79, 1, 12, 7, 56, 69, 30, 58, 78, 45]
+      }
+    };
+
+    const buttons      = [...document.querySelectorAll("[data-set]")];
+    const setPicker    = document.querySelector("[data-set-picker]");
+    const nameTargets  = [...document.querySelectorAll("[data-selected-name]")];
+    const playerTitle  = document.querySelector("[data-player-title]");
+    const playerCopy   = document.querySelector("[data-player-copy]");
+    const playButton   = document.querySelector("[data-play]");
+    const prevButton   = document.querySelector("[data-prev]");
+    const nextButton   = document.querySelector("[data-next]");
+    const display      = document.querySelector("[data-poem-display]");
+    const elNum        = document.querySelector("[data-poem-num]");
+    const elAuthor     = document.querySelector("[data-poem-author]");
+    const elKimari     = document.querySelector("[data-poem-kimari]");
+    const elKami       = document.querySelector("[data-poem-kami]");
+    const elKamiKanji  = document.querySelector("[data-poem-kami-kanji]");
+    const elShimo      = document.querySelector("[data-poem-shimo]");
+    const elShimoKanji = document.querySelector("[data-poem-shimo-kanji]");
+    const progressBar  = document.querySelector("[data-progress-bar]");
+    const progressLbl  = document.querySelector("[data-progress-label]");
+    const youtubeLink  = document.querySelector("[data-youtube-link]");
+    const playIcon = '<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5-10-6.5Z" fill="currentColor"/></svg>';
+    const pauseIcon = '<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="5" width="3.8" height="14" rx="1.2" fill="currentColor"/><rect x="13.2" y="5" width="3.8" height="14" rx="1.2" fill="currentColor"/></svg>';
+
+    let selectedSet = "1";
+    try { selectedSet = window.localStorage.getItem("kimarijiSelectedSet") || "1"; } catch(_) {}
+    let queue = [];
+    let cursor = -1;
+    let isPlaying = false;
+    let isPaused = false;
+    let started = false;
+    let completed = false;
+    let audioRun = 0;
+    let betweenTimer = null;
+    let cancelBetween = null;
+    let resumeBetween = null;
+    let resolveClip = null;
+    const audio = new Audio();
+    audio.preload = "auto";
+
+    function buildQueue() {
+      const d = setDetails[selectedSet];
+      queue = d.poems
+        .map((poemNumber) => POEMS.find((poem) => poem.n === poemNumber))
+        .filter(Boolean);
+    }
+
+    function setTransportState() {
+      const hasCurrent = started && cursor >= 0;
+      playButton.disabled = false;
+      playButton.innerHTML = isPlaying ? pauseIcon : playIcon;
+      playButton.setAttribute("aria-label", isPlaying ? "一時停止" : isPaused ? "再開" : completed ? "最初から再生" : hasCurrent ? "もう一度再生" : "再生");
+      playButton.title = isPlaying ? "一時停止" : isPaused ? "再開" : completed ? "最初から再生" : hasCurrent ? "もう一度再生" : "再生";
+      prevButton.disabled = !hasCurrent || cursor <= 0;
+      nextButton.disabled = !hasCurrent || completed || cursor >= queue.length - 1;
+    }
+
+    function setUIIdle(message) {
+      isPlaying = false;
+      isPaused = false;
+      setTransportState();
+      if (message) playerCopy.textContent = message;
+    }
+
+    function setUIPlaying(message) {
+      isPlaying = true;
+      isPaused = false;
+      setTransportState();
+      if (message) playerCopy.textContent = message;
+    }
+
+    function setUIPaused(message) {
+      isPlaying = false;
+      isPaused = false;
+      setTransportState();
+      if (message) playerCopy.textContent = message;
+    }
+
+    function renderPoem(p, idx) {
+      display.hidden = false;
+      elNum.textContent = `${p.n}番`;
+      elAuthor.textContent = p.au;
+      elKimari.textContent = p.ki;
+      elKami.textContent = p.k2;
+      elKamiKanji.textContent = p.k1;
+      elShimo.textContent = p.s2;
+      elShimoKanji.textContent = p.s1;
+      const total = queue.length;
+      const cur = idx + 1;
+      progressBar.style.width = `${(cur / total) * 100}%`;
+      progressLbl.textContent = `${cur} / ${total} 首`;
+      playerCopy.textContent = `${setDetails[selectedSet].name} ${cur}/${total}首・${p.n}番`;
+    }
+
+    function audioPath(poemNumber, part) {
+      return `yomi/I-${String(poemNumber).padStart(3, "0")}${part}.wav`;
+    }
+
+    function resetLineFill(line) {
+      line.classList.remove("reading");
+      line.style.setProperty("--fill", "0%");
+    }
+
+    function resetAllLineFill() {
+      resetLineFill(elKami);
+      resetLineFill(elShimo);
+    }
+
+    function stopCurrentAudio() {
+      audioRun++;
+      clearTimeout(betweenTimer);
+      if (cancelBetween) cancelBetween();
+      if (resumeBetween) {
+        const resume = resumeBetween;
+        resumeBetween = null;
+        resume(false);
+      }
+      if (resolveClip) {
+        const resolve = resolveClip;
+        resolveClip = null;
+        resolve(false);
+      }
+      audio.pause();
+      audio.onended = null;
+      audio.onerror = null;
+      audio.ontimeupdate = null;
+      audio.removeAttribute("src");
+      audio.load();
+      resetAllLineFill();
+      isPlaying = false;
+      isPaused = false;
+    }
+
+    function waitBetween(runId, ms) {
+      return new Promise((resolve) => {
+        let settled = false;
+        function finish(value) {
+          if (settled) return;
+          settled = true;
+          cancelBetween = null;
+          resumeBetween = null;
+          resolve(value && runId === audioRun);
+        }
+        cancelBetween = () => {
+          finish(false);
+        };
+        resumeBetween = (value = true) => {
+          finish(value);
+        };
+        betweenTimer = setTimeout(() => {
+          finish(true);
+        }, ms);
+      });
+    }
+
+    function playClip(src, runId, line) {
+      return new Promise((resolve, reject) => {
+        let settled = false;
+
+        function finish(value) {
+          if (settled) return;
+          settled = true;
+          resolveClip = null;
+          resolve(value);
+        }
+
+        function fail(error) {
+          if (settled) return;
+          settled = true;
+          resolveClip = null;
+          reject(error);
+        }
+
+        resetAllLineFill();
+        line.classList.add("reading");
+        line.style.setProperty("--fill", "0%");
+        resolveClip = finish;
+        audio.onended = () => {
+          line.style.setProperty("--fill", "100%");
+          finish(runId === audioRun);
+        };
+        audio.onerror = () => fail(new Error(`audio error: ${src}`));
+        audio.ontimeupdate = () => {
+          if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
+          const fill = Math.min(100, Math.max(0, (audio.currentTime / audio.duration) * 100));
+          line.style.setProperty("--fill", `${fill}%`);
+        };
+        audio.src = src;
+        audio.currentTime = 0;
+        const playPromise = audio.play();
+        if (playPromise?.catch) {
+          playPromise.catch(fail);
+        }
+      });
+    }
+
+    async function playPoemAudio(p, onDone) {
+      stopCurrentAudio();
+      const runId = ++audioRun;
+      completed = false;
+      setUIPlaying(`${setDetails[selectedSet].name} ${cursor + 1}/${queue.length}首・${p.n}番を再生中`);
+
+      try {
+        const upperCompleted = await playClip(audioPath(p.n, "A"), runId, elKami);
+        if (!upperCompleted) return;
+
+        const gapCompleted = await waitBetween(runId, 220);
+        if (!gapCompleted) return;
+
+        const lowerCompleted = await playClip(audioPath(p.n, "B"), runId, elShimo);
+        if (!lowerCompleted) return;
+
+        resetAllLineFill();
+        isPlaying = false;
+        isPaused = false;
+        if (onDone) onDone();
+      } catch (error) {
+        if (runId !== audioRun) return;
+        resetAllLineFill();
+        isPlaying = false;
+        isPaused = false;
+        setUIIdle("音声ファイルを再生できませんでした。yomi フォルダの録音ファイルを確認してください。");
+      }
+    }
+
+    function pauseReading() {
+      if (!isPlaying) return;
+      clearTimeout(betweenTimer);
+      if (!resumeBetween) audio.pause();
+      isPlaying = false;
+      isPaused = true;
+      playerCopy.textContent = `${setDetails[selectedSet].name} ${cursor + 1}/${queue.length}首・一時停止中`;
+      setTransportState();
+    }
+
+    function resumeReading() {
+      if (!isPaused) return;
+      isPlaying = true;
+      isPaused = false;
+      setTransportState();
+      playerCopy.textContent = `${setDetails[selectedSet].name} ${cursor + 1}/${queue.length}首・再生中`;
+      if (resumeBetween) {
+        const resume = resumeBetween;
+        resumeBetween = null;
+        resume(true);
+        return;
+      }
+      const playPromise = audio.play();
+      if (playPromise?.catch) {
+        playPromise.catch(() => {
+          isPlaying = false;
+          isPaused = true;
+          setTransportState();
+        });
+      }
+    }
+
+    function startReading() {
+      buildQueue();
+      cursor = 0;
+      started = true;
+      completed = false;
+      const p = queue[cursor];
+      renderPoem(p, cursor);
+      playPoemAudio(p, () => {
+        if (cursor >= queue.length - 1) {
+          finishSet();
+        } else {
+          setUIPaused(`${setDetails[selectedSet].name} ${cursor + 1}/${queue.length}首・次へ進めます。`);
+        }
+      });
+    }
+
+    function nextPoem() {
+      if (cursor >= queue.length - 1) return;
+      cursor++;
+      started = true;
+      completed = false;
+      const p = queue[cursor];
+      renderPoem(p, cursor);
+      playPoemAudio(p, () => {
+        if (cursor >= queue.length - 1) {
+          finishSet();
+        } else {
+          setUIPaused(`${setDetails[selectedSet].name} ${cursor + 1}/${queue.length}首・次へ進めます。`);
+        }
+      });
+    }
+
+    function previousPoem() {
+      if (cursor <= 0) return;
+      cursor--;
+      started = true;
+      completed = false;
+      const p = queue[cursor];
+      renderPoem(p, cursor);
+      playPoemAudio(p, () => {
+        setUIPaused(`${setDetails[selectedSet].name} ${cursor + 1}/${queue.length}首・次へ進めます。`);
+      });
+    }
+
+    function replayCurrent() {
+      if (!started || completed) {
+        startReading();
+        return;
+      }
+      const p = queue[cursor];
+      playPoemAudio(p, () => {
+        if (cursor >= queue.length - 1) finishSet();
+        else setUIPaused();
+      });
+    }
+
+    function finishSet() {
+      completed = true;
+      isPlaying = false;
+      setTransportState();
+      playerCopy.textContent = `${setDetails[selectedSet].name}（${queue.length}首）を最後まで読み終わりました。`;
+    }
+
+    function stopSpeech({ keepDisplay = true } = {}) {
+      const hadCurrent = cursor >= 0 && display.hidden === false;
+      stopCurrentAudio();
+      isPlaying = false;
+      isPaused = false;
+      completed = false;
+      resetAllLineFill();
+      if (keepDisplay && hadCurrent) {
+        started = true;
+        display.hidden = false;
+        playerCopy.textContent = `${setDetails[selectedSet].name} ${cursor + 1}/${queue.length}首・停止中`;
+      } else {
+        started = false;
+        cursor = -1;
+        display.hidden = true;
+        playerCopy.textContent = `${setDetails[selectedSet].name}は再生ボタンで１首めから始まります。`;
+      }
+      setTransportState();
+    }
+
+    function updateSet(setNumber) {
+      selectedSet = setDetails[setNumber] ? String(setNumber) : "1";
+      const detail = setDetails[selectedSet];
+
+      buttons.forEach((b) => {
+        b.setAttribute("aria-pressed", String(b.dataset.set === selectedSet));
+      });
+      nameTargets.forEach((t) => { t.textContent = detail.name; });
+
+      playerTitle.textContent = `${detail.name}を再生`;
+      playerCopy.textContent = `公式セット分けに合わせた25首を、セット内の順番で読み上げます。`;
+      if (setPicker) setPicker.open = false;
+
+      try { window.localStorage.setItem("kimarijiSelectedSet", selectedSet); } catch(_) {}
+
+      if (started || isPlaying || display.hidden === false) {
+        stopSpeech({ keepDisplay: false });
+      } else {
+        setTransportState();
+      }
+    }
+
+    buttons.forEach((b) => b.addEventListener("click", () => updateSet(b.dataset.set)));
+    playButton.addEventListener("click", () => {
+      if (isPlaying) {
+        pauseReading();
+      } else if (isPaused) {
+        resumeReading();
+      } else if (!started || cursor < 0 || completed) {
+        startReading();
+      } else {
+        replayCurrent();
+      }
+    });
+    prevButton.addEventListener("click", previousPoem);
+    nextButton.addEventListener("click", nextPoem);
+    youtubeLink?.addEventListener("click", (event) => {
+      event.preventDefault();
+      window.location.href = youtubeLink.href;
+    });
+    window.addEventListener("pagehide", stopCurrentAudio);
+
+    updateSet(selectedSet);
+  </script>
+</body>
+</html>
