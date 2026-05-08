@@ -1,0 +1,2 @@
+# kimarijikaruta-reader
+決まり字百人一首展示で使用するチラシから遷移する読み上げLP
