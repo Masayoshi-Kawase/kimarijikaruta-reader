@@ -462,6 +462,20 @@
       letter-spacing: 0;
       font-weight: 950;
     }
+    .combined-card {
+      border-radius: 8px;
+      box-shadow: 0 4px 0 rgba(63, 117, 57, 0.10);
+    }
+    .combined-card .set-picker {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-bottom: 0;
+      box-shadow: none;
+    }
+    .combined-card .player-card {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
     @media (max-width: 640px) {
       body > main { padding: 14px 12px; }
       #sets { padding: 14px; }
@@ -500,29 +514,8 @@
           <img class="pointer-events-none absolute bottom-[-8px] right-0 w-[104px] drop-shadow-[0_10px_16px_rgba(66,47,24,0.14)] sm:w-[136px]" src="assets/kino_green.png" alt="手を振って案内するKaruta Clubの女の子キャラクター">
         </div>
 
-        <div class="mt-4 grid gap-4">
-          <section aria-labelledby="step-set-title">
-            <div class="mb-2 flex items-center gap-2">
-              <h2 id="step-set-title" class="text-xl font-black text-green-dark">①セットを選ぼう</h2>
-            </div>
-
-            <div class="card-reference">
-              <figure>
-                <span class="reference-image">
-                  <img src="assets/card-clover-reference.png" alt="右下に四葉マークが印刷された取り札の参考写真">
-                  <span class="clover-marker" aria-hidden="true"></span>
-                </span>
-                <figcaption>札の右下にある小さな四葉マークを見ます。</figcaption>
-              </figure>
-              <figure>
-                <img src="assets/card-groups-reference.png" alt="四葉マークで分かれた4グループの札の参考写真">
-                <figcaption>塗られている葉っぱの枚数が、そのままセット番号です。<span>全部で４セット、各セット25枚ずつあります。好きなセットを選んでください。</span></figcaption>
-              </figure>
-            </div>
-            <p class="mb-2 inline-flex rounded-lg border-2 border-dashed border-green/30 bg-yellow-soft px-3 py-2 text-sm font-black leading-6 text-green-dark">
-              例: 葉っぱが１枚なら「決まり字かるた１」、２枚なら「決まり字かるた２」
-            </p>
-
+        <div class="mt-4 grid gap-3">
+          <div class="combined-card">
             <details class="set-picker rounded-lg border-2 border-green/25 bg-[#fffdf7] shadow-[0_4px_0_rgba(63,117,57,0.08)]" data-set-picker>
               <summary class="flex min-h-[54px] cursor-pointer list-none items-center justify-between gap-3 px-4 py-2 font-black text-ink">
                 <span class="flex min-w-0 flex-wrap items-center gap-2">セット: <span class="text-pink" data-selected-name>決まり字かるた１</span></span>
@@ -557,12 +550,6 @@
                 </button>
               </div>
             </details>
-          </section>
-
-          <section aria-labelledby="step-play-title">
-            <div class="mb-2 flex items-center gap-2">
-              <h2 id="step-play-title" class="text-xl font-black text-green-dark">②読みを流そう</h2>
-            </div>
 
             <div class="player-card grid grid-cols-1 items-center gap-3 rounded-lg bg-green-dark p-3 text-white sm:grid-cols-[minmax(0,1fr)_auto]">
               <div class="min-w-0">
@@ -581,21 +568,21 @@
                 </button>
               </div>
             </div>
+          </div>
 
-            <div class="mt-3 rounded-lg border-2 border-green/20 bg-white/85 p-4" data-poem-display hidden>
-              <div class="mb-2 flex flex-wrap items-center gap-2">
-                <span class="rounded-full bg-pink px-3 py-1 text-xs font-black text-white" data-poem-num>1番</span>
-                <span class="rounded-full border-2 border-green bg-white px-3 py-1 text-xs font-black text-green-dark" data-poem-author>天智天皇</span>
-              </div>
-              <div class="kimari-tag"><span>決まり字</span><strong data-poem-kimari>あきの</strong></div>
-              <div class="poem-line poem-kami my-1 px-1 text-[1.08rem] font-black leading-8 sm:text-xl" data-poem-kami>あきのたの かりほのいおの とまをあらみ</div>
-              <div class="mb-2 px-1 text-xs font-bold leading-5 text-muted sm:text-sm" data-poem-kami-kanji>秋の田の かりほの庵の 苫をあらみ</div>
-              <div class="poem-line poem-shimo my-1 px-1 text-[1.08rem] font-black leading-8 sm:text-xl" data-poem-shimo>わがころもでは つゆにぬれつつ</div>
-              <div class="mb-2 px-1 text-xs font-bold leading-5 text-muted sm:text-sm" data-poem-shimo-kanji>わが衣手は 露にぬれつつ</div>
-              <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-green/15"><div class="h-full w-0 rounded-full bg-green transition-[width] duration-300" data-progress-bar></div></div>
-              <div class="mt-1 text-right text-xs font-extrabold text-muted" data-progress-label>1 / 25 首</div>
+          <div class="rounded-lg border-2 border-green/20 bg-white/85 p-4" data-poem-display hidden>
+            <div class="mb-2 flex flex-wrap items-center gap-2">
+              <span class="rounded-full bg-pink px-3 py-1 text-xs font-black text-white" data-poem-num>1番</span>
+              <span class="rounded-full border-2 border-green bg-white px-3 py-1 text-xs font-black text-green-dark" data-poem-author>天智天皇</span>
             </div>
-          </section>
+            <div class="kimari-tag"><span>決まり字</span><strong data-poem-kimari>あきの</strong></div>
+            <div class="poem-line poem-kami my-1 px-1 text-[1.08rem] font-black leading-8 sm:text-xl" data-poem-kami>あきのたの かりほのいおの とまをあらみ</div>
+            <div class="mb-2 px-1 text-xs font-bold leading-5 text-muted sm:text-sm" data-poem-kami-kanji>秋の田の かりほの庵の 苫をあらみ</div>
+            <div class="poem-line poem-shimo my-1 px-1 text-[1.08rem] font-black leading-8 sm:text-xl" data-poem-shimo>わがころもでは つゆにぬれつつ</div>
+            <div class="mb-2 px-1 text-xs font-bold leading-5 text-muted sm:text-sm" data-poem-shimo-kanji>わが衣手は 露にぬれつつ</div>
+            <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-green/15"><div class="h-full w-0 rounded-full bg-green transition-[width] duration-300" data-progress-bar></div></div>
+            <div class="mt-1 text-right text-xs font-extrabold text-muted" data-progress-label>1 / 25 首</div>
+          </div>
         </div>
       </section>
     </div>
